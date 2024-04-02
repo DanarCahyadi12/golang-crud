@@ -14,4 +14,5 @@ func main() {
 	app := config.NewApp(fiber, validator, database, viper, logrus)
 	app.Setup()
 	app.StartServer()
+
 }

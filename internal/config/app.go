@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"go-crud/internal/injector"
 	"gorm.io/gorm"
 )
 
@@ -37,5 +38,7 @@ func (app *App) StartServer() {
 }
 
 func (app *App) Setup() {
+	signupRoute := injector.InjectSignupRoute(app.Fiber, app.Database, app.Validator, app.Logger)
+	signupRoute.Setup()
 
 }
