@@ -5,9 +5,9 @@ type Response[T any] struct {
 	Data    T      `json:"data,omitempty"`
 }
 type ErrorResponse struct {
-	Code    int
-	Message string
-	Status  string
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+	Status  string `json:"status,omitempty"`
 }
 
 func (e ErrorResponse) Error() string {
