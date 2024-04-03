@@ -50,7 +50,7 @@ func (r *UserRepository) FindOneById(user *entity.User, id string) error {
 }
 
 func (r *UserRepository) DeleteOneById(id string) error {
-	err := r.Database.Delete(&entity.User{}, id).Error
+	err := r.Database.Delete(&entity.User{}, "id = ?", id).Error
 	if err != nil {
 		return err
 	}
