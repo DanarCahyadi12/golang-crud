@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"go-crud/internal/models"
@@ -13,20 +12,21 @@ type SignupController struct {
 	SignupUsecase *usecase.SignUpUsecase
 }
 
-func NewSignupController(usecase *usecase.SignUpUsecase) *SignupController {
+func NewSignupController(log *logrus.Logger, usecase *usecase.SignUpUsecase) *SignupController {
 	return &SignupController{
+		Log:           log,
 		SignupUsecase: usecase,
 	}
 }
 
 func (c *SignupController) Signup(ctx *fiber.Ctx) error {
+	ctx.Accepts("application/json")
 	request := new(models.SignUpRequest)
-	fmt.Println("REQUEST: ", request)
 	err := ctx.BodyParser(request)
 
 	if err != nil {
-		c.Log.Errorf("Error while parsing request body. %v", err)
-		return fiber.NewError(500, "Something Wrong")
+		c.Log.Errorf("%v", err)
+		return fiber.NewError(400, "Fields must be a string")
 	}
 
 	result, err := c.SignupUsecase.CreateUser(request)

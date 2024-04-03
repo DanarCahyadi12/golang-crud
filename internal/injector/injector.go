@@ -14,7 +14,7 @@ import (
 func InjectSignupRoute(app *fiber.App, database *gorm.DB, validator *validator.Validate, log *logrus.Logger) *routes.SignupRoute {
 	userRepository := repository.NewUserRepository(database)
 	userUsecase := usecase.NewSignUpUsecase(userRepository, validator, log)
-	userController := controllers.NewSignupController(userUsecase)
+	userController := controllers.NewSignupController(log, userUsecase)
 	userRoute := routes.NewSignupRoute(app, userController)
 
 	return userRoute

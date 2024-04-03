@@ -7,11 +7,11 @@ import (
 func main() {
 	viper := config.NewViper("./../../")
 	fiber := config.NewFiber()
-	logrus := config.NewLogrus()
+	log := config.NewLogrus()
 	validator := config.NewValidator()
 	database := config.NewGorm(viper)
 
-	app := config.NewApp(fiber, validator, database, viper, logrus)
+	app := config.NewApp(fiber, validator, database, viper, log)
 	app.Setup()
 	app.StartServer()
 
