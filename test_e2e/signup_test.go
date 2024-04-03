@@ -169,7 +169,12 @@ func TestSignup(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader(string(bodyJson)))
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Accept", "application/json")
-
+		user, err := UserRepository.FindOneByEmail(body.Email)
+		require.Nil(t, err)
+		if user != nil {
+			err := UserRepository.DeleteOneById(user.Id)
+			require.Nil(t, err)
+		}
 		response, err := App.Fiber.Test(req)
 		require.Nil(t, err)
 
@@ -185,5 +190,7 @@ func TestSignup(t *testing.T) {
 		require.NotNil(t, expectedResponse.Data.CreatedAt)
 		require.NotNil(t, expectedResponse.Data.UpdatedAt)
 		require.Equal(t, http.StatusCreated, response.StatusCode)
+		err = UserRepository.DeleteOneById(expectedResponse.Data.Id)
+		require.Nil(t, err)
 	})
 }

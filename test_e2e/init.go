@@ -6,6 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"go-crud/internal/config"
+	"go-crud/internal/repository"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,7 @@ var Database *gorm.DB
 var Log *logrus.Logger
 var FiberApp *fiber.App
 var App *config.App
+var UserRepository *repository.UserRepository
 
 func init() {
 	ViperConfig = config.NewViper("./../")
@@ -22,6 +24,7 @@ func init() {
 	Database = config.NewGorm(ViperConfig)
 	Log = config.NewLogrus()
 	FiberApp = config.NewFiber()
+	UserRepository = repository.NewUserRepository(Database)
 	App = config.NewApp(FiberApp, Validate, Database, ViperConfig, Log)
 	App.Setup()
 }
