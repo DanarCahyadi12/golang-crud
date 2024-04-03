@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"go-crud/internal/models"
@@ -20,6 +21,7 @@ func NewSignupController(usecase *usecase.SignUpUsecase) *SignupController {
 
 func (c *SignupController) Signup(ctx *fiber.Ctx) error {
 	request := new(models.SignUpRequest)
+	fmt.Println("REQUEST: ", request)
 	err := ctx.BodyParser(request)
 
 	if err != nil {

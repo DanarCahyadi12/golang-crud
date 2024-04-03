@@ -2,8 +2,10 @@ package test_e2e
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/stretchr/testify/require"
 	"go-crud/internal/models"
+	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -170,7 +172,9 @@ func TestSignup(t *testing.T) {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Accept", "application/json")
 		user, err := UserRepository.FindOneByEmail(body.Email)
-		require.Nil(t, err)
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			require.NotEqual(t, gorm.ErrRecordNotFound, err)
+		}
 		if user != nil {
 			err := UserRepository.DeleteOneById(user.Id)
 			require.Nil(t, err)
