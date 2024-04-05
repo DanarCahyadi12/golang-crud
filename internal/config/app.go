@@ -41,4 +41,7 @@ func (app *App) Setup() {
 	signupRoute := injector.InjectSignupRoute(app.Fiber, app.Database, app.Validator, app.Logger)
 	signupRoute.Setup()
 
+	authRoute := injector.InjectAuthRoute(app.Fiber, app.Database, app.Validator, app.Viper, app.Logger)
+	authRoute.Setup()
+
 }
