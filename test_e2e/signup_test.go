@@ -95,7 +95,7 @@ func TestSignup(t *testing.T) {
 
 		require.Nil(t, err)
 
-		require.Equal(t, "Email is invalid", expectedResponse.Message)
+		require.Equal(t, "Email format is invalid", expectedResponse.Message)
 		require.Equal(t, "Bad Request", expectedResponse.Status)
 		require.Equal(t, http.StatusBadRequest, response.StatusCode)
 
