@@ -29,6 +29,9 @@ func (r *UserRepositoryMock) Save(user *entity.User) error {
 func (r *UserRepositoryMock) FindOneByEmail(email string) (*entity.User, error) {
 	args := r.Mock.Called(email)
 	err := args.Error(1)
+	if args.Get(0) == nil {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, args.Error(1).(*models.ErrorResponse)
 	}
