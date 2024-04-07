@@ -60,3 +60,10 @@ func (c *AuthController) SignIn(ctx *fiber.Ctx) error {
 	})
 
 }
+
+func (c *AuthController) SignOut(ctx *fiber.Ctx) error {
+	ctx.ClearCookie()
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[any]{
+		Message: "Sign out successfully",
+	})
+}
