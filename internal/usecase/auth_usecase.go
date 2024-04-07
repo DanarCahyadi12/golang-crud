@@ -31,6 +31,70 @@ func NewAuthUsecase(repository repository.UserRepositoryInterface, validator *va
 	}
 }
 
+func (c *AuthUsecase) VerifyRefreshToken(refreshToken string) (string, error) {
+	if refreshToken == "" {
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Status:  "Unauthorized",
+			Message: "You're unauthorized",
+		}
+	}
+	refreshTokenKey := c.Viper.GetString("token.key.refresh")
+
+	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(refreshTokenKey), nil
+	})
+
+	if err != nil {
+		c.Log.WithError(err).Error("Error while parsing refresh token")
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return "", &models.ErrorResponse{
+				Code:    401,
+				Status:  "Unauthorized",
+				Message: "Token is expired",
+			}
+		}
+
+		if errors.Is(err, jwt.ErrInvalidKey) {
+			return "", &models.ErrorResponse{
+				Code:    401,
+				Status:  "Unauthorized",
+				Message: "Refresh token key is invalid",
+			}
+		}
+
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Status:  "Unauthorized",
+			Message: "Invalid token",
+		}
+	}
+
+	var sub string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		sub = claims["sub"].(string)
+	}
+
+	return sub, nil
+
+}
+
+func (c *AuthUsecase) RefreshToken(refreshToken string) (*models.AuthResponse, error) {
+	sub, err := c.VerifyRefreshToken(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := c.GenerateAccessToken(sub)
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.AuthResponse{
+		AccessToken: accessToken,
+	}, nil
+}
+
 func (c *AuthUsecase) ValidateRequest(request *models.SignInRequest) error {
 	err := c.Validate.Struct(request)
 
@@ -95,7 +159,7 @@ func (c *AuthUsecase) GenerateRefreshToken(userID string) (string, error) {
 	return token, nil
 
 }
-func (c *AuthUsecase) SignIn(request *models.SignInRequest) (*models.SignInResponse, error) {
+func (c *AuthUsecase) SignIn(request *models.SignInRequest) (*models.AuthResponse, error) {
 	err := c.ValidateRequest(request)
 	if err != nil {
 		return nil, err
@@ -174,7 +238,7 @@ func (c *AuthUsecase) SignIn(request *models.SignInRequest) (*models.SignInRespo
 	}
 	wg.Wait()
 
-	return &models.SignInResponse{
+	return &models.AuthResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

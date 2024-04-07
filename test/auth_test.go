@@ -144,4 +144,24 @@ func TestAuth(t *testing.T) {
 		}, err)
 
 	})
+
+	t.Run("Verify refresh token", func(t *testing.T) {
+		refreshToken, err := authUsecase.GenerateRefreshToken("user-id")
+		require.Nil(t, err)
+		require.NotNil(t, refreshToken)
+
+		sub, err := authUsecase.VerifyRefreshToken(refreshToken)
+		require.Nil(t, err)
+		require.NotNil(t, sub)
+	})
+
+	t.Run("Verify refresh token and generate new access token", func(t *testing.T) {
+		refreshToken, err := authUsecase.GenerateRefreshToken("user-id")
+		require.Nil(t, err)
+		require.NotNil(t, refreshToken)
+
+		result, err := authUsecase.RefreshToken(refreshToken)
+		require.Nil(t, err)
+		require.NotNil(t, result)
+	})
 }

@@ -20,4 +20,5 @@ func NewAuthRoute(app *fiber.App, authController *controllers.AuthController) *A
 func (r *AuthRoute) Setup() {
 	r.App.Post("/auth/signin", r.AuthController.SignIn)
 	r.App.Get("/signout", r.AuthController.SignOut)
+	r.App.Get("/auth/token", r.AuthController.RefreshToken)
 }

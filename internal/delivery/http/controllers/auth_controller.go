@@ -54,7 +54,7 @@ func (c *AuthController) SignIn(ctx *fiber.Ctx) error {
 
 	ctx.Cookie(cookie)
 
-	return ctx.Status(fiber.StatusOK).JSON(models.Response[*models.SignInResponse]{
+	return ctx.Status(fiber.StatusOK).JSON(models.Response[*models.AuthResponse]{
 		Message: "Signin successfully",
 		Data:    result,
 	})
@@ -65,5 +65,22 @@ func (c *AuthController) SignOut(ctx *fiber.Ctx) error {
 	ctx.ClearCookie()
 	return ctx.Status(fiber.StatusOK).JSON(&models.Response[any]{
 		Message: "Sign out successfully",
+	})
+}
+
+func (c *AuthController) RefreshToken(ctx *fiber.Ctx) error {
+	refreshToken := ctx.Cookies("refresh_token", "")
+	result, err := c.AuthUsecase.RefreshToken(refreshToken)
+	if err != nil {
+		c.Log.WithError(err).Error("Error while getting token")
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+		return fiber.NewError(500, "Something Error")
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[*models.AuthResponse]{
+		Message: "Access token successfully generated",
+		Data:    result,
 	})
 }

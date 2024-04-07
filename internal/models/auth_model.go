@@ -5,7 +5,7 @@ type SignInRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type SignInResponse struct {
+type AuthResponse struct {
 	AccessToken  string `json:"access_token,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
