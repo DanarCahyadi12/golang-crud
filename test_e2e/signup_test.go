@@ -13,7 +13,25 @@ import (
 	"testing"
 )
 
+var email = "danar@gmail.com"
+
+func DeleteUserIfExits() {
+	userFound, err := UserRepository.FindOneByEmail(email)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(err)
+	}
+
+	if userFound != nil {
+		err := UserRepository.DeleteOneById(userFound.Id)
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			panic(err)
+		}
+	}
+
+}
+
 func TestSignup(t *testing.T) {
+	DeleteUserIfExits()
 	t.Run("Signup with empty name", func(t *testing.T) {
 		body := models.SignUpRequest{
 			Name:     "",
