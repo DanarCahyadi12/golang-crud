@@ -31,7 +31,7 @@ func (c *SignupController) Signup(ctx *fiber.Ctx) error {
 
 	result, err := c.SignupUsecase.CreateUser(request)
 	if err != nil {
-		if e := err.(*models.ErrorResponse); e != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
 			return fiber.NewError(e.Code, e.Message)
 		}
 		c.Log.Errorf("Error while creating user: %v", err)

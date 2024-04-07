@@ -12,7 +12,7 @@ func GetFirstValidationErrorAndConvert(validationError error) string {
 
 	var message string
 
-	if errs := validationError.(validator.ValidationErrors); errs != nil {
+	if errs, ok := validationError.(validator.ValidationErrors); ok {
 		for _, err := range errs {
 			field = err.Field()
 			tag = err.Tag()
