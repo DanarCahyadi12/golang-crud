@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
 	"go-crud/internal/models"
@@ -26,7 +27,10 @@ func (c *SignupController) Signup(ctx *fiber.Ctx) error {
 
 	if err != nil {
 		c.Log.Errorf("%v", err)
-		return fiber.NewError(400, "Fields must be a string")
+		if e, ok := err.(*fiber.UnmarshalTypeError); ok {
+			return fiber.NewError(400, fmt.Sprintf("%s must be a string", e.Field))
+
+		}
 	}
 
 	result, err := c.SignupUsecase.CreateUser(request)
