@@ -25,7 +25,7 @@ func GetFirstValidationErrorAndConvert(validationError error) string {
 	case "email":
 		message = "Email format is invalid"
 		break
-	case "min":
+	case "min", "max":
 		message = fmt.Sprintf("%s %s %s character", field, tag, param)
 		break
 	default:
