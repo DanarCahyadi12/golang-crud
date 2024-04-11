@@ -10,12 +10,14 @@ import (
 
 var viperConfig *viper.Viper
 var userRepositoryMock *mocks.UserRepositoryMock
+var productRepositoryMock *mocks.ProductRepositoryMock
 var validate *validator.Validate
 var log *logrus.Logger
 
 func init() {
 	viperConfig = config.NewViper("./../")
 	userRepositoryMock = mocks.NewRepositoryMock()
+	productRepositoryMock = mocks.NewProductRepositoryMock()
 	validate = config.NewValidator()
 	log = config.NewLogrus()
 }

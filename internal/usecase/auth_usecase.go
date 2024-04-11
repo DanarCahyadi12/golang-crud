@@ -11,6 +11,7 @@ import (
 	"go-crud/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"strings"
 	"sync"
 	"time"
 )
@@ -242,5 +243,81 @@ func (c *AuthUsecase) SignIn(request *models.SignInRequest) (*models.AuthRespons
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+
+}
+
+func (c *AuthUsecase) ParseTokenFromHeader(authorization string) (string, error) {
+	if authorization == "" {
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Message: "You're unauthorized",
+			Status:  "Unauthorized",
+		}
+	}
+	if !strings.HasPrefix(authorization, "Bearer ") {
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Message: "Invalid authorization",
+			Status:  "Unauthorized",
+		}
+	}
+
+	return strings.TrimPrefix(authorization, "Bearer "), nil
+
+}
+
+func (c *AuthUsecase) VerifyAccessToken(accessToken string) (string, error) {
+	if accessToken == "" {
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Status:  "Unauthorized",
+			Message: "You're unauthorized",
+		}
+	}
+	accessTokenKey := c.Viper.GetString("token.key.access")
+	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(accessTokenKey), nil
+	})
+
+	if err != nil {
+		c.Log.WithError(err).Error("Error parsing token")
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return "", &models.ErrorResponse{
+				Code:    401,
+				Status:  "Unauthorized",
+				Message: "Token expired",
+			}
+
+		}
+
+		if errors.Is(err, jwt.ErrInvalidKey) {
+			return "", &models.ErrorResponse{
+				Code:    401,
+				Status:  "Unauthorized",
+				Message: "Invalid key",
+			}
+		}
+
+		if !token.Valid {
+			return "", &models.ErrorResponse{
+				Code:    401,
+				Status:  "Unauthorized",
+				Message: "Invalid token",
+			}
+		}
+
+		return "", &models.ErrorResponse{
+			Code:    401,
+			Status:  "Unauthorized",
+			Message: err.Error(),
+		}
+	}
+
+	var sub string
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		sub = claims["sub"].(string)
+	}
+
+	return sub, nil
 
 }

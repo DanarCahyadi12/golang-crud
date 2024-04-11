@@ -2,11 +2,8 @@ package test_e2e
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/stretchr/testify/require"
-	"go-crud/internal/entity"
 	"go-crud/internal/models"
-	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -14,46 +11,13 @@ import (
 	"testing"
 )
 
-var user = &entity.User{
-	Name:     "Danar",
-	Email:    "danar@gmail.com",
-	Password: "$2a$10$aOySpFRuA2uE8gGNNCuAleiBvNRyMJpZuyhZ21kf/Tpy5c8KHNRTe",
-}
-
-func createUser() {
-	userFound, err := UserRepository.FindOneByEmail(user.Email)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(err)
-	}
-
-	if userFound != nil {
-		err := UserRepository.DeleteOneById(userFound.Id)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-			panic(err)
-		}
-	}
-
-	err = UserRepository.Save(user)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func deleteUser() {
-	err := UserRepository.DeleteOneById(user.Id)
-
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(err)
-	}
-}
-
 func TestAuth(t *testing.T) {
-	createUser()
-	defer deleteUser()
+	CreateUser(user)
+	defer DeleteUser(user.Id)
 
 	t.Run("Sign in with empty email", func(t *testing.T) {
 		body := models.SignInRequest{
-			Email:    "danar@gmail.com",
+			Email:    "",
 			Password: "12345678",
 		}
 
@@ -72,9 +36,9 @@ func TestAuth(t *testing.T) {
 		err = json.Unmarshal(bodyByte, &expectedResponse)
 		require.Nil(t, err)
 
-		require.Equal(t, http.StatusUnauthorized, response.StatusCode)
-		require.Equal(t, "Email or password is incorrect", expectedResponse.Message)
-		require.Equal(t, "Unauthorized", expectedResponse.Status)
+		require.Equal(t, http.StatusBadRequest, response.StatusCode)
+		require.Equal(t, "Email required", expectedResponse.Message)
+		require.Equal(t, "Bad Request", expectedResponse.Status)
 
 	})
 
@@ -200,7 +164,7 @@ func TestAuth(t *testing.T) {
 		response, err := App.Fiber.Test(req)
 
 		require.Nil(t, err)
-		var expectedResponse models.Response[*models.SignInResponse]
+		var expectedResponse models.Response[*models.AuthResponse]
 		bodyByte, err := io.ReadAll(response.Body)
 		require.Nil(t, err)
 
