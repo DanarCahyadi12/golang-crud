@@ -8,3 +8,7 @@ type Product struct {
 	UserId string `gorm:"column:user_id;"`
 	User   User   `gorm:"foreignKey:user_id;references:id"`
 }
+
+func (p *Product) TableName() string {
+	return "product"
+}
