@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/require"
 	"go-crud/internal/entity"
 	"go-crud/internal/models"
@@ -164,4 +165,32 @@ func TestAuth(t *testing.T) {
 		require.Nil(t, err)
 		require.NotNil(t, result)
 	})
+
+	t.Run("Parsing token from authorization header", func(t *testing.T) {
+		token, err := authUsecase.ParseTokenFromHeader("Bearer my token")
+		require.Nil(t, err)
+		fmt.Println(token)
+		require.NotNil(t, token)
+	})
+
+	t.Run("Should return error when authorization header is incorrect", func(t *testing.T) {
+		token, err := authUsecase.ParseTokenFromHeader("Invalid my token")
+		require.NotNil(t, err)
+		require.Equal(t, "", token)
+
+		token, err = authUsecase.ParseTokenFromHeader("Bearer")
+		require.NotNil(t, err)
+		require.Equal(t, "", token)
+	})
+
+	t.Run("Verify access token", func(t *testing.T) {
+		accessToken, err := authUsecase.GenerateAccessToken("user-id")
+		require.Nil(t, err)
+		require.NotNil(t, accessToken)
+
+		sub, err := authUsecase.VerifyAccessToken(accessToken)
+		require.Nil(t, err)
+		require.NotNil(t, sub)
+	})
+
 }
