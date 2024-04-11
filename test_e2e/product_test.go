@@ -23,7 +23,7 @@ func TestProduct(t *testing.T) {
 	defer DeleteUser(user.Id)
 
 	t.Run("Create product", func(t *testing.T) {
-		body := models.CreateProductRequest{
+		body := models.ProductRequest{
 			Name:  "Product 1",
 			Price: 1500,
 			Stock: 20000,
@@ -54,7 +54,7 @@ func TestProduct(t *testing.T) {
 	})
 
 	t.Run("Create product with empty product name", func(t *testing.T) {
-		body := models.CreateProductRequest{
+		body := models.ProductRequest{
 			Name:  "",
 			Price: 1500,
 			Stock: 20000,

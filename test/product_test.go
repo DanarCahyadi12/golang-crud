@@ -12,7 +12,7 @@ func TestProduct(t *testing.T) {
 	productUsecase := usecase.NewProductUsecase(productRepositoryMock, validate, viperConfig, log)
 	t.Run("Validate request", func(t *testing.T) {
 		t.Run("Empty name", func(t *testing.T) {
-			req := &models.CreateProductRequest{
+			req := &models.ProductRequest{
 				Name:  "",
 				Price: 12000,
 				Stock: 302,
@@ -25,7 +25,7 @@ func TestProduct(t *testing.T) {
 
 	t.Run("Create product", func(t *testing.T) {
 		t.Run("Should return error when creating with empty name", func(t *testing.T) {
-			req := &models.CreateProductRequest{
+			req := &models.ProductRequest{
 				Name:  "",
 				Price: 12000,
 				Stock: 302,
@@ -42,7 +42,7 @@ func TestProduct(t *testing.T) {
 		})
 
 		t.Run("Should successfully creating product", func(t *testing.T) {
-			req := &models.CreateProductRequest{
+			req := &models.ProductRequest{
 				Name:  "Product 1",
 				Price: 12000,
 				Stock: 302,

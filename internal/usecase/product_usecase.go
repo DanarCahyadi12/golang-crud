@@ -26,7 +26,7 @@ func NewProductUsecase(repository repository.ProductRepositoryInterface, validat
 	}
 }
 
-func (c *ProductUsecase) ValidateRequest(req *models.CreateProductRequest) error {
+func (c *ProductUsecase) ValidateRequest(req *models.ProductRequest) error {
 	err := c.Validate.Struct(req)
 	if err != nil {
 		c.Log.WithError(err).Error("Error validating request")
@@ -40,7 +40,7 @@ func (c *ProductUsecase) ValidateRequest(req *models.CreateProductRequest) error
 	return nil
 }
 
-func (c *ProductUsecase) CreateProduct(request *models.CreateProductRequest, userId string) (*models.ProductResponse, error) {
+func (c *ProductUsecase) CreateProduct(request *models.ProductRequest, userId string) (*models.ProductResponse, error) {
 	err := c.ValidateRequest(request)
 	if err != nil {
 		c.Log.WithError(err).Error("Error validating request")

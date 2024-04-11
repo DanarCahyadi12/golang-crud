@@ -21,7 +21,7 @@ func NewProductController(log *logrus.Logger, usecase *usecase.ProductUsecase) *
 }
 
 func (c *ProductController) CreateProduct(ctx *fiber.Ctx) error {
-	var body = new(models.CreateProductRequest)
+	var body = new(models.ProductRequest)
 	userId := ctx.Locals("user_id").(string)
 	err := ctx.BodyParser(body)
 	if err != nil {

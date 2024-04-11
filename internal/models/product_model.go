@@ -2,7 +2,7 @@ package models
 
 import "go-crud/internal/entity"
 
-type CreateProductRequest struct {
+type ProductRequest struct {
 	Name  string `json:"name" validate:"required,max=255"`
 	Price int    `json:"price" validate:"min=0"`
 	Stock int    `json:"stock" validate:"min=0"`
