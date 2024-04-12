@@ -48,3 +48,12 @@ func (r *ProductRepositoryMock) UpdateById(product entity.Product, productID str
 	}
 	return args.Get(0).(*entity.Product), nil
 }
+
+func (r *ProductRepositoryMock) DeleteById(productID string) error {
+	args := r.Mock.Called(productID)
+	err := args.Error(0)
+	if err != nil {
+		return err
+	}
+	return nil
+}

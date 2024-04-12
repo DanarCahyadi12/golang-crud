@@ -64,8 +64,6 @@ func (c *ProductController) UpdateProduct(ctx *fiber.Ctx) error {
 	}
 
 	productID := ctx.Params("id")
-
-	fmt.Println("ID: ", productID)
 	result, err := c.ProductUsecase.UpdateProduct(request, productID)
 	if err != nil {
 		if e, ok := err.(*models.ErrorResponse); ok {
@@ -80,4 +78,20 @@ func (c *ProductController) UpdateProduct(ctx *fiber.Ctx) error {
 		Data:    result,
 	})
 
+}
+
+func (c *ProductController) DeleteProduct(ctx *fiber.Ctx) error {
+	productID := ctx.Params("id")
+	err := c.ProductUsecase.DeleteProduct(productID)
+	if err != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+		c.Log.WithError(err).Error("Unknown error while deleting product")
+		return fiber.NewError(fiber.StatusInternalServerError, "Something Wrong")
+
+	}
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[any]{
+		Message: "Product deleted",
+	})
 }

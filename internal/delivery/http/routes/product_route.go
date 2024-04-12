@@ -25,4 +25,5 @@ func NewProductRoute(app *fiber.App, productController *controllers.ProductContr
 func (r *ProductRoute) Setup() {
 	r.App.Post("/products", r.AuthMiddleware.Auth, r.ProductController.CreateProduct)
 	r.App.Put("/products/:id", r.AuthMiddleware.Auth, r.ProductMiddleware.ProductAuth, r.ProductController.UpdateProduct)
+	r.App.Delete("/products/:id", r.AuthMiddleware.Auth, r.ProductMiddleware.ProductAuth, r.ProductController.DeleteProduct)
 }

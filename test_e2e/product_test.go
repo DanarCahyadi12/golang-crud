@@ -164,4 +164,61 @@ func TestProduct(t *testing.T) {
 
 	})
 
+	t.Run("Should delete product", func(t *testing.T) {
+		product := new(entity.Product)
+		product.Id = uuid.New().String()
+		product.Name = "Product 2"
+		product.Price = 15000
+		product.Stock = 120
+		product.UserId = user.Id
+
+		err := ProductRepository.Save(product)
+		require.Nil(t, err)
+
+		target := fmt.Sprintf("/products/%s", product.Id)
+		req := httptest.NewRequest(http.MethodDelete, target, nil)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.Response[any]
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.Equal(t, http.StatusOK, response.StatusCode)
+		require.Equal(t, "Product deleted", actualResponse.Message)
+	})
+
+	t.Run("Should return error if product is not found", func(t *testing.T) {
+		product := new(entity.Product)
+		product.Id = uuid.New().String()
+		product.Name = "Product 2"
+		product.Price = 15000
+		product.Stock = 120
+		product.UserId = user.Id
+
+		err := ProductRepository.Save(product)
+		require.Nil(t, err)
+
+		target := fmt.Sprintf("/products/%s", "notfound-id")
+		req := httptest.NewRequest(http.MethodDelete, target, nil)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.ErrorResponse
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.Equal(t, http.StatusNotFound, response.StatusCode)
+		require.Equal(t, "Product not found", actualResponse.Message)
+	})
 }

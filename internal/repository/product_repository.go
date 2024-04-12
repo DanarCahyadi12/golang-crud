@@ -10,6 +10,7 @@ type ProductRepositoryInterface interface {
 	FindOneById(product *entity.Product, id string) error
 	FindMany(products []*entity.Product, offset int, limit int) error
 	UpdateById(product entity.Product, productID string) (*entity.Product, error)
+	DeleteById(productID string) error
 }
 
 type ProductRepository struct {
@@ -58,4 +59,13 @@ func (r *ProductRepository) UpdateById(product entity.Product, productID string)
 		return nil, err
 	}
 	return model, nil
+}
+
+func (r *ProductRepository) DeleteById(productID string) error {
+	err := r.Database.Delete(&entity.Product{}, "id = ?", productID).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

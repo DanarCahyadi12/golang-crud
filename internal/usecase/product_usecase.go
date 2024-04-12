@@ -123,3 +123,25 @@ func (c *ProductUsecase) UpdateProduct(request *models.ProductRequest, productId
 		Price: result.Price,
 	}, nil
 }
+
+func (c *ProductUsecase) DeleteProduct(productID string) error {
+	err := c.Repository.DeleteById(productID)
+	if err != nil {
+		c.Log.WithError(err).Error("Error while deleting product by id")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &models.ErrorResponse{
+				Code:    404,
+				Message: "Product not found",
+				Status:  "Not Found",
+			}
+		}
+
+		return &models.ErrorResponse{
+			Code:    500,
+			Message: "Something Error",
+			Status:  "Internal Server Error",
+		}
+	}
+
+	return nil
+}

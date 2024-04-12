@@ -102,4 +102,19 @@ func TestProduct(t *testing.T) {
 			require.Nil(t, result)
 		})
 	})
+
+	t.Run("Delete product", func(t *testing.T) {
+		const productID = "product-id"
+		t.Run("Should return error if the product is doesn't matched", func(t *testing.T) {
+			productRepositoryMock.Mock.On("DeleteById", "").Return(gorm.ErrRecordNotFound)
+			err := productUsecase.DeleteProduct("")
+			require.Equal(t, "Product not found", err.Error())
+		})
+
+		t.Run("Shouldn't return a error", func(t *testing.T) {
+			productRepositoryMock.Mock.On("DeleteById", productID).Return(nil)
+			err := productUsecase.DeleteProduct(productID)
+			require.Nil(t, err)
+		})
+	})
 }
