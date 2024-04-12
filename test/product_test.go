@@ -5,6 +5,7 @@ import (
 	"go-crud/internal/entity"
 	"go-crud/internal/models"
 	"go-crud/internal/usecase"
+	"gorm.io/gorm"
 	"testing"
 )
 
@@ -41,28 +42,64 @@ func TestProduct(t *testing.T) {
 			require.Nil(t, result)
 		})
 
-		t.Run("Should successfully creating product", func(t *testing.T) {
-			req := &models.ProductRequest{
-				Name:  "Product 1",
-				Price: 12000,
-				Stock: 302,
-			}
+	})
+
+	t.Run("Update product", func(t *testing.T) {
+		t.Run("Should successfully updating product", func(t *testing.T) {
+			const productID string = "product-id"
+			request := new(models.ProductRequest)
+			request.Name = "Product update"
+			request.Stock = 10
+			request.Price = 1500
+
 			product := new(entity.Product)
-			product.Name = "Product 1"
-			product.Stock = 302
-			product.Price = 12000
-			product.UserId = "user-id"
+			product.Name = request.Name
+			product.Stock = request.Stock
+			product.Price = request.Price
 
-			expectedResponse := new(models.ProductResponse)
-			expectedResponse.Name = product.Name
-			expectedResponse.Stock = product.Stock
-			expectedResponse.Price = product.Price
-
-			productRepositoryMock.Mock.On("Save", product).Return(nil)
-			result, err := productUsecase.CreateProduct(req, "user-id")
+			productRepositoryMock.Mock.On("UpdateById", entity.Product{Name: request.Name, Stock: request.Stock, Price: request.Price}, productID).Return(product, nil)
+			result, err := productUsecase.UpdateProduct(request, productID)
 			require.Nil(t, err)
-			require.Equal(t, expectedResponse, result)
+			require.Equal(t, "Product update", result.Name)
+			require.Equal(t, 10, result.Stock)
+			require.Equal(t, 1500, product.Price)
+		})
 
+		t.Run("Should return a error when updating with empty name", func(t *testing.T) {
+			const productID string = "product-id"
+			request := new(models.ProductRequest)
+			request.Name = ""
+			request.Stock = 10
+			request.Price = 1500
+
+			product := new(entity.Product)
+			product.Name = request.Name
+			product.Stock = request.Stock
+			product.Price = request.Price
+
+			productRepositoryMock.Mock.On("UpdateById", product, productID).Return(product, nil)
+			result, err := productUsecase.UpdateProduct(request, productID)
+			require.NotNil(t, err)
+			require.Nil(t, result)
+		})
+
+		t.Run("Should return a error when updating with wrong id", func(t *testing.T) {
+			const productID string = "wrong-id"
+			request := new(models.ProductRequest)
+			request.Name = "Product updated"
+			request.Stock = 10
+			request.Price = 1500
+
+			product := entity.Product{
+				Name:  request.Name,
+				Stock: request.Stock,
+				Price: request.Price,
+			}
+
+			productRepositoryMock.Mock.On("UpdateById", product, productID).Return(nil, gorm.ErrRecordNotFound)
+			result, err := productUsecase.UpdateProduct(request, productID)
+			require.NotNil(t, err)
+			require.Nil(t, result)
 		})
 	})
 }

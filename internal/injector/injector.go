@@ -39,7 +39,8 @@ func InjectProductRoute(app *fiber.App, database *gorm.DB, validator *validator.
 	productUsecase := usecase.NewProductUsecase(productRepository, validator, viper, log)
 	productController := controllers.NewProductController(log, productUsecase)
 	authMiddleware := middleware.NewAuthMiddleware(authUsecase, log)
-	productRoute := routes.NewProductRoute(app, productController, authMiddleware)
+	productMiddleware := middleware.NewProductMiddleware(productRepository, log)
+	productRoute := routes.NewProductRoute(app, productController, authMiddleware, productMiddleware)
 
 	return productRoute
 }

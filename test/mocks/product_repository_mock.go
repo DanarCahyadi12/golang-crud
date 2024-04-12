@@ -39,3 +39,12 @@ func (r *ProductRepositoryMock) FindMany(products []*entity.Product, offset int,
 	}
 	return nil
 }
+
+func (r *ProductRepositoryMock) UpdateById(product entity.Product, productID string) (*entity.Product, error) {
+	args := r.Mock.Called(product, productID)
+	err := args.Error(1)
+	if err != nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*entity.Product), nil
+}

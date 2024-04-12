@@ -49,3 +49,35 @@ func (c *ProductController) CreateProduct(ctx *fiber.Ctx) error {
 		Data:    result,
 	})
 }
+
+func (c *ProductController) UpdateProduct(ctx *fiber.Ctx) error {
+	request := new(models.ProductRequest)
+	err := ctx.BodyParser(request)
+	if err != nil {
+		c.Log.WithError(err).Error("Error while unmarshal request body")
+		if e, ok := err.(*fiber.UnmarshalTypeError); ok {
+			return fiber.NewError(400, fmt.Sprintf("Invalid type %s type for %s field", e.Type, e.Field))
+		}
+
+		return fiber.NewError(fiber.StatusInternalServerError, "Something Wrong")
+
+	}
+
+	productID := ctx.Params("id")
+
+	fmt.Println("ID: ", productID)
+	result, err := c.ProductUsecase.UpdateProduct(request, productID)
+	if err != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+		c.Log.WithError(err).Error("Unknown error while updating product")
+		return fiber.NewError(fiber.StatusInternalServerError, "Something Wrong")
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[*models.ProductResponse]{
+		Message: "Product updated",
+		Data:    result,
+	})
+
+}

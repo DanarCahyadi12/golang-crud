@@ -17,6 +17,7 @@ var Log *logrus.Logger
 var FiberApp *fiber.App
 var App *config.App
 var UserRepository *repository.UserRepository
+var ProductRepository *repository.ProductRepository
 
 func init() {
 	ViperConfig = config.NewViper("./../")
@@ -25,6 +26,7 @@ func init() {
 	Log = config.NewLogrus()
 	FiberApp = config.NewFiber()
 	UserRepository = repository.NewUserRepository(Database)
+	ProductRepository = repository.NewProductRepository(Database)
 	App = config.NewApp(FiberApp, Validate, Database, ViperConfig, Log)
 	App.Setup()
 }
