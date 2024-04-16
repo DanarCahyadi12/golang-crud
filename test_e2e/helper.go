@@ -110,3 +110,19 @@ func CreateManyProduct(userID string) error {
 	}
 	return nil
 }
+
+func CreateOneProduct(userID string) (*entity.Product, error) {
+	product := new(entity.Product)
+	product.Id = uuid.New().String()
+	product.Name = "Product 1"
+	product.Stock = 500
+	product.Price = 2000
+	product.UserId = userID
+
+	err := Database.Save(product).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return product, nil
+}

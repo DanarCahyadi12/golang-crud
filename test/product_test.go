@@ -231,4 +231,38 @@ func TestProduct(t *testing.T) {
 			require.Equal(t, pageSize, metadata.PageSize)
 		})
 	})
+
+	t.Run("Get detail products", func(t *testing.T) {
+		t.Run("Should return error 404 not found", func(t *testing.T) {
+			productRepositoryMock.Mock.On("FindOneById", mock.Anything, "invalid-id").Return(gorm.ErrRecordNotFound)
+			result, err := productUsecase.GetDetailProduct("invalid-id")
+			require.Nil(t, result)
+			require.Equal(t, "Product not found", err.Error())
+		})
+
+		t.Run("Should return detail product", func(t *testing.T) {
+			var productMock entity.Product
+			productMock.Id = "id"
+			productMock.Name = "Product 1"
+			productMock.Price = 1500
+			productMock.Stock = 120
+			productMock.User = entity.User{
+				Id:   "user-id",
+				Name: "Danar",
+			}
+			productRepositoryMock.Mock.On("FindOneById", mock.Anything, "id").Return(nil).Run(func(args mock.Arguments) {
+				productPtr := args.Get(0).(*entity.Product)
+				*productPtr = productMock
+			})
+			result, err := productUsecase.GetDetailProduct("id")
+			require.Nil(t, err)
+			require.Equal(t, productMock.Id, result.Id)
+			require.Equal(t, productMock.Name, result.Name)
+			require.Equal(t, productMock.Price, result.Price)
+			require.Equal(t, productMock.Stock, result.Stock)
+			require.Equal(t, productMock.User.Id, result.User.Id)
+			require.Equal(t, productMock.User.Name, result.User.Name)
+		})
+
+	})
 }

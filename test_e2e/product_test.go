@@ -304,4 +304,27 @@ func TestProduct(t *testing.T) {
 
 	})
 
+	t.Run("Get detail product", func(t *testing.T) {
+		product, err := CreateOneProduct(user.Id)
+		require.Nil(t, err)
+
+		target := fmt.Sprintf("/products/%s", product.Id)
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.Response[*models.ProductResponse]
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.NotNil(t, actualResponse.Data.Id)
+		require.Equal(t, product.Name, actualResponse.Data.Name)
+		require.Equal(t, product.Stock, actualResponse.Data.Stock)
+		require.Equal(t, product.Price, actualResponse.Data.Price)
+	})
+
 }

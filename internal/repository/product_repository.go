@@ -33,7 +33,7 @@ func (r *ProductRepository) Save(product *entity.Product) error {
 }
 
 func (r *ProductRepository) FindOneById(product *entity.Product, id string) error {
-	err := r.Database.First(product, "id = ?", id).Error
+	err := r.Database.InnerJoins("User").First(product, r.Database.Where("product.id = ?", id)).Error
 	if err != nil {
 		return err
 	}

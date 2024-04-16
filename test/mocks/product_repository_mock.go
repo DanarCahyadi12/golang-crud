@@ -25,7 +25,8 @@ func (r *ProductRepositoryMock) Save(product *entity.Product) error {
 }
 func (r *ProductRepositoryMock) FindOneById(product *entity.Product, id string) error {
 	args := r.Mock.Called(product, id)
-	if args.Error(0) != nil {
+	err := args.Error(0)
+	if err != nil {
 		return args.Error(0)
 	}
 

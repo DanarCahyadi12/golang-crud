@@ -131,3 +131,22 @@ func (c *ProductController) GetProducts(ctx *fiber.Ctx) error {
 		Data:     products,
 	})
 }
+
+func (c *ProductController) GetDetail(ctx *fiber.Ctx) error {
+	productID := ctx.Params("id", "")
+	result, err := c.ProductUsecase.GetDetailProduct(productID)
+
+	if err != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+
+		c.Log.WithError(err).Error("Error getting detail product")
+
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[*models.ProductResponse]{
+		Message: "Get detail product succesfully",
+		Data:    result,
+	})
+}

@@ -194,3 +194,34 @@ func (c *ProductUsecase) GetMetadataPagination(pageNumber int, limit int) (*mode
 
 	return metadata, nil
 }
+
+func (c *ProductUsecase) GetDetailProduct(productID string) (*models.ProductResponse, error) {
+	product := new(entity.Product)
+	err := c.Repository.FindOneById(product, productID)
+	if err != nil {
+		c.Log.WithError(err).Error("Error getting product")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, &models.ErrorResponse{
+				Code:    404,
+				Message: "Product not found",
+				Status:  "Not Found",
+			}
+		}
+
+		return nil, &models.ErrorResponse{
+			Code:    500,
+			Message: "Something Wrong",
+			Status:  "Internal Server Error",
+		}
+	}
+	return &models.ProductResponse{
+		Id:    product.Id,
+		Name:  product.Name,
+		Price: product.Price,
+		Stock: product.Stock,
+		User: models.UserResponse{
+			Id:   product.User.Id,
+			Name: product.User.Name,
+		},
+	}, nil
+}
