@@ -95,3 +95,39 @@ func (c *ProductController) DeleteProduct(ctx *fiber.Ctx) error {
 		Message: "Product deleted",
 	})
 }
+
+func (c *ProductController) GetProducts(ctx *fiber.Ctx) error {
+	limit := ctx.QueryInt("limit", 50)
+	if limit > 100 {
+		return fiber.NewError(fiber.StatusBadRequest, "Max limit is 100")
+	}
+	page := ctx.QueryInt("page", 1)
+
+	offset := (page - 1) * limit
+
+	products, err := c.ProductUsecase.GetProducts(offset, limit)
+	if err != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+		c.Log.WithError(err).Error("Error while getting products")
+		return fiber.NewError(fiber.StatusInternalServerError, "Something Error")
+	}
+
+	metadata, err := c.ProductUsecase.GetMetadataPagination(page, limit)
+	if err != nil {
+		if e, ok := err.(*models.ErrorResponse); ok {
+			return fiber.NewError(e.Code, e.Message)
+		}
+
+		c.Log.WithError(err).Error("Error from product controller.")
+		return fiber.NewError(fiber.StatusInternalServerError, "Something Wrong")
+
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(&models.Response[*[]models.ProductResponse]{
+		Message:  "Get products successfully",
+		Metadata: metadata,
+		Data:     products,
+	})
+}

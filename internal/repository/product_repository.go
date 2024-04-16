@@ -8,9 +8,10 @@ import (
 type ProductRepositoryInterface interface {
 	Save(product *entity.Product) error
 	FindOneById(product *entity.Product, id string) error
-	FindMany(products []*entity.Product, offset int, limit int) error
+	FindMany(products *[]entity.Product, offset int, limit int) error
 	UpdateById(product entity.Product, productID string) (*entity.Product, error)
 	DeleteById(productID string) error
+	Count() (int64, error)
 }
 
 type ProductRepository struct {
@@ -39,8 +40,8 @@ func (r *ProductRepository) FindOneById(product *entity.Product, id string) erro
 	return nil
 }
 
-func (r *ProductRepository) FindMany(products []*entity.Product, offset int, limit int) error {
-	err := r.Database.Limit(limit).Offset(offset).Find(products).Error
+func (r *ProductRepository) FindMany(products *[]entity.Product, offset int, limit int) error {
+	err := r.Database.InnerJoins("User").Limit(limit).Offset(offset).Find(products).Order("created_at DESC").Error
 	if err != nil {
 		return err
 	}
@@ -68,4 +69,14 @@ func (r *ProductRepository) DeleteById(productID string) error {
 	}
 
 	return nil
+}
+
+func (r *ProductRepository) Count() (int64, error) {
+	var count int64
+	err := r.Database.Model(&entity.Product{}).Count(&count).Error
+	if err != nil {
+		return -1, err
+	}
+
+	return count, nil
 }

@@ -1,6 +1,8 @@
 package models
 
-import "go-crud/internal/entity"
+import (
+	"time"
+)
 
 type ProductRequest struct {
 	Name  string `json:"name" validate:"required,max=255"`
@@ -9,9 +11,11 @@ type ProductRequest struct {
 }
 
 type ProductResponse struct {
-	Id    string        `json:"id,omitempty"`
-	Name  string        `json:"name,omitempty"`
-	Price int           `json:"price,omitempty"`
-	Stock int           `json:"stock,omitempty"`
-	User  []entity.User `json:"user,omitempty"`
+	Id        string       `json:"id,omitempty"`
+	Name      string       `json:"name,omitempty"`
+	Price     int          `json:"price,omitempty"`
+	Stock     int          `json:"stock,omitempty"`
+	CreatedAt time.Time    `json:"created_at,omitempty"`
+	UpdatedAt time.Time    `json:"updated_at,omitempty"`
+	User      UserResponse `json:"user,omitempty"`
 }

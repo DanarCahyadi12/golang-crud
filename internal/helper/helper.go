@@ -40,3 +40,19 @@ func GetFirstValidationErrorAndConvert(validationError error) string {
 
 	return message
 }
+
+func FormatNextURLPagination(path string, page int, limit int, pageSize int64) string {
+	if int64(page) < pageSize {
+		return fmt.Sprintf("http://localhost:8080/%s?page=%d&limit=%d", path, page+1, limit)
+	}
+
+	return ""
+
+}
+
+func FormatPrevURLPagination(path string, page int, limit int) string {
+	if page <= 1 {
+		return ""
+	}
+	return fmt.Sprintf("http://localhost:8080/%s?page=%d&limit=%d", path, page-1, limit)
+}

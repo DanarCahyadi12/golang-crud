@@ -1,11 +1,15 @@
 package test
 
 import (
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"go-crud/internal/entity"
+	"go-crud/internal/helper"
 	"go-crud/internal/models"
 	"go-crud/internal/usecase"
 	"gorm.io/gorm"
+	"math"
 	"testing"
 )
 
@@ -115,6 +119,116 @@ func TestProduct(t *testing.T) {
 			productRepositoryMock.Mock.On("DeleteById", productID).Return(nil)
 			err := productUsecase.DeleteProduct(productID)
 			require.Nil(t, err)
+		})
+	})
+
+	t.Run("Get products", func(t *testing.T) {
+		mockProducts := []entity.Product{
+			{
+				Id:    "1",
+				Name:  "Product 1",
+				Price: 15000,
+				Stock: 120,
+				User: entity.User{
+					Id:   "user-id-1",
+					Name: "Danar Cahyadi",
+				},
+			},
+			{
+				Id:    "2",
+				Name:  "Product 2",
+				Price: 20000,
+				Stock: 150,
+				User: entity.User{
+					Id:   "user-id-2",
+					Name: "Ketut Danar",
+				},
+			},
+		}
+		expectedResult := &[]entity.Product{
+			{
+				Id:    "1",
+				Name:  "Product 1",
+				Price: 15000,
+				Stock: 120,
+				User: entity.User{
+					Id:   "user-id-1",
+					Name: "Danar Cahyadi",
+				},
+			},
+			{
+				Id:    "2",
+				Name:  "Product 2",
+				Price: 20000,
+				Stock: 150,
+				User: entity.User{
+					Id:   "user-id-2",
+					Name: "Ketut Danar",
+				},
+			},
+		}
+		t.Run("Should return products with user entity", func(t *testing.T) {
+			productRepositoryMock.Mock.On("FindMany", mock.Anything, mock.Anything, mock.Anything).Return(nil).Run(func(args mock.Arguments) {
+				productsPtr := args.Get(0).(*[]entity.Product)
+				*productsPtr = mockProducts
+			})
+			result, err := productUsecase.GetProducts(0, 2)
+			require.Nil(t, err)
+			require.Equal(t, expectedResult, result)
+
+		})
+
+		t.Run("Should return next and previos pagination URL", func(t *testing.T) {
+			nextURL := helper.FormatNextURLPagination("products", 1, 10, 20)
+			assert.Equal(t, "http://localhost:8080/products?page=2&limit=10", nextURL)
+
+			nextURL = helper.FormatNextURLPagination("products", 20, 10, 20)
+			assert.Equal(t, "", nextURL)
+
+			prevURL := helper.FormatPrevURLPagination("products", 2, 10)
+			assert.Equal(t, "http://localhost:8080/products?page=1&limit=10", prevURL)
+
+			prevURL = helper.FormatPrevURLPagination("products", 1, 10)
+			assert.Equal(t, "", prevURL)
+		})
+
+		t.Run("Should return metadata", func(t *testing.T) {
+			var returnArgs int64 = 100
+			var pageSize int64 = int64(math.Ceil(float64(returnArgs / 50)))
+			productRepositoryMock.Mock.On("Count").Return(returnArgs, nil)
+			metadata, err := productUsecase.GetMetadataPagination(1, 50)
+			require.Nil(t, err)
+			require.Equal(t, 1, metadata.PageNumber)
+			require.Equal(t, returnArgs, metadata.TotalItemCount)
+			require.Equal(t, "http://localhost:8080/products?page=2&limit=50", metadata.Next)
+			require.Equal(t, "", metadata.Prev)
+			require.Equal(t, pageSize, metadata.PageSize)
+		})
+
+		t.Run("Next link on metadata must be empty", func(t *testing.T) {
+			var returnArgs int64 = 100
+			var pageSize int64 = int64(math.Ceil(float64(returnArgs / 50)))
+			productRepositoryMock.Mock.On("Count").Return(returnArgs, nil)
+			metadata, err := productUsecase.GetMetadataPagination(50, 50)
+			require.Nil(t, err)
+			require.Equal(t, 50, metadata.PageNumber)
+			require.Equal(t, returnArgs, metadata.TotalItemCount)
+			require.Equal(t, "", metadata.Next)
+			require.Equal(t, "http://localhost:8080/products?page=49&limit=50", metadata.Prev)
+			require.Equal(t, pageSize, metadata.PageSize)
+		})
+
+		t.Run("Next link & previous link on metadata must not be empty", func(t *testing.T) {
+			var returnArgs int64 = 500
+			var pageSize int64 = int64(math.Ceil(float64(returnArgs / 50)))
+			productRepositoryMock.Mock.On("Count").Return(returnArgs, nil)
+			metadata, err := productUsecase.GetMetadataPagination(5, 50)
+			require.Nil(t, err)
+			require.Equal(t, 5, metadata.PageNumber)
+			require.Equal(t, returnArgs, metadata.TotalItemCount)
+			require.Equal(t, "http://localhost:8080/products?page=6&limit=50", metadata.Next)
+			require.Equal(t, "http://localhost:8080/products?page=4&limit=50", metadata.Prev)
+			require.Equal(t, pageSize, metadata.PageSize)
 		})
 	})
 }

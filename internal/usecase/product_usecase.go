@@ -11,6 +11,7 @@ import (
 	"go-crud/internal/models"
 	"go-crud/internal/repository"
 	"gorm.io/gorm"
+	"math"
 )
 
 type ProductUsecase struct {
@@ -144,4 +145,52 @@ func (c *ProductUsecase) DeleteProduct(productID string) error {
 	}
 
 	return nil
+}
+
+func (c *ProductUsecase) GetProducts(offset int, limit int) (*[]models.ProductResponse, error) {
+	var products []entity.Product
+	err := c.Repository.FindMany(&products, offset, limit)
+	if err != nil {
+		c.Log.WithError(err).Error("Error while getting products")
+		return nil, &models.ErrorResponse{
+			Code:    500,
+			Message: "Something Error",
+			Status:  "Internal Server Error",
+		}
+	}
+
+	productResponse := make([]models.ProductResponse, len(products))
+	for index, product := range products {
+		productResponse[index].Id = product.Id
+		productResponse[index].Name = product.Name
+		productResponse[index].Price = product.Price
+		productResponse[index].Stock = product.Stock
+		productResponse[index].User.Id = product.User.Id
+		productResponse[index].User.Name = product.User.Name
+
+	}
+	return &productResponse, nil
+}
+
+func (c *ProductUsecase) GetMetadataPagination(pageNumber int, limit int) (*models.Metadata, error) {
+	count, err := c.Repository.Count()
+	if err != nil {
+		c.Log.WithError(err).Error("Error while count total product record")
+		return nil, &models.ErrorResponse{
+			Code:    500,
+			Message: "Something Wrong",
+			Status:  "Internal Server Error",
+		}
+	}
+	size := float64(count) / float64(limit)
+	pageSize := int64(math.Ceil(size))
+
+	metadata := new(models.Metadata)
+	metadata.PageSize = pageSize
+	metadata.TotalItemCount = count
+	metadata.PageNumber = pageNumber
+	metadata.Next = helper.FormatNextURLPagination("products", pageNumber, limit, pageSize)
+	metadata.Prev = helper.FormatPrevURLPagination("products", pageNumber, limit)
+
+	return metadata, nil
 }

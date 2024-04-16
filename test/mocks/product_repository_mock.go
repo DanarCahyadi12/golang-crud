@@ -32,7 +32,7 @@ func (r *ProductRepositoryMock) FindOneById(product *entity.Product, id string) 
 	return nil
 }
 
-func (r *ProductRepositoryMock) FindMany(products []*entity.Product, offset int, limit int) error {
+func (r *ProductRepositoryMock) FindMany(products *[]entity.Product, offset int, limit int) error {
 	args := r.Mock.Called(products, offset, limit)
 	if args.Error(0) != nil {
 		return args.Error(0)
@@ -56,4 +56,13 @@ func (r *ProductRepositoryMock) DeleteById(productID string) error {
 		return err
 	}
 	return nil
+}
+func (r *ProductRepositoryMock) Count() (int64, error) {
+	args := r.Mock.Called()
+	err := args.Error(1)
+	if err != nil {
+		return -1, err
+	}
+
+	return args.Get(0).(int64), nil
 }

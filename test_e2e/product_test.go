@@ -221,4 +221,87 @@ func TestProduct(t *testing.T) {
 		require.Equal(t, http.StatusNotFound, response.StatusCode)
 		require.Equal(t, "Product not found", actualResponse.Message)
 	})
+
+	t.Run("Should return products metadata (page 1 and limit 10)", func(t *testing.T) {
+		const PAGE = 1
+		const LIMIT = 10
+		target := fmt.Sprintf("/products?page=%d&limit=%d", PAGE, LIMIT)
+		err := CreateManyProduct(user.Id)
+		require.Nil(t, err)
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.Response[*[]models.ProductResponse]
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.NotNil(t, actualResponse.Message)
+		require.Equal(t, int64(5), actualResponse.Metadata.PageSize)
+		require.Equal(t, int64(50), actualResponse.Metadata.TotalItemCount)
+		require.Equal(t, 1, actualResponse.Metadata.PageNumber)
+		require.Equal(t, "", actualResponse.Metadata.Prev)
+		require.Equal(t, fmt.Sprintf("http://localhost:8080/products?page=%d&limit=%d", PAGE+1, LIMIT), actualResponse.Metadata.Next)
+		require.Equal(t, "", actualResponse.Metadata.Prev)
+
+	})
+
+	t.Run("Should return products metadata (page 2 and limit 10)", func(t *testing.T) {
+		const PAGE = 2
+		const LIMIT = 10
+		target := fmt.Sprintf("/products?page=%d&limit=%d", PAGE, LIMIT)
+		err := CreateManyProduct(user.Id)
+		require.Nil(t, err)
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.Response[*[]models.ProductResponse]
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.NotNil(t, actualResponse.Message)
+		require.Equal(t, int64(5), actualResponse.Metadata.PageSize)
+		require.Equal(t, int64(50), actualResponse.Metadata.TotalItemCount)
+		require.Equal(t, PAGE, actualResponse.Metadata.PageNumber)
+		require.Equal(t, fmt.Sprintf("http://localhost:8080/products?page=%d&limit=%d", PAGE+1, LIMIT), actualResponse.Metadata.Next)
+		require.Equal(t, fmt.Sprintf("http://localhost:8080/products?page=%d&limit=%d", PAGE-1, LIMIT), actualResponse.Metadata.Prev)
+
+	})
+
+	t.Run("Should return products metadata (page 5 and limit 10)", func(t *testing.T) {
+		const PAGE = 5
+		const LIMIT = 10
+		target := fmt.Sprintf("/products?page=%d&limit=%d", PAGE, LIMIT)
+		err := CreateManyProduct(user.Id)
+		require.Nil(t, err)
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", response.Data.AccessToken))
+
+		response, err := App.Fiber.Test(req)
+		require.Nil(t, err)
+
+		var actualResponse models.Response[*[]models.ProductResponse]
+		bodyByte, err := io.ReadAll(response.Body)
+		require.Nil(t, err)
+		err = json.Unmarshal(bodyByte, &actualResponse)
+		require.Nil(t, err)
+
+		require.NotNil(t, actualResponse.Message)
+		require.Equal(t, int64(5), actualResponse.Metadata.PageSize)
+		require.Equal(t, int64(50), actualResponse.Metadata.TotalItemCount)
+		require.Equal(t, PAGE, actualResponse.Metadata.PageNumber)
+		require.Equal(t, "", actualResponse.Metadata.Next)
+		require.Equal(t, fmt.Sprintf("http://localhost:8080/products?page=%d&limit=%d", PAGE-1, LIMIT), actualResponse.Metadata.Prev)
+
+	})
+
 }

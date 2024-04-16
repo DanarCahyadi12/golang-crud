@@ -3,6 +3,8 @@ package test_e2e
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
 	"go-crud/internal/entity"
 	"go-crud/internal/models"
 	"gorm.io/gorm"
@@ -64,6 +66,7 @@ var user = &entity.User{
 }
 
 func CreateUser(user *entity.User) {
+	user.Id = uuid.New().String()
 	userFound, err := UserRepository.FindOneByEmail(user.Email)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(err)
@@ -88,4 +91,22 @@ func DeleteUser(id string) {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(err)
 	}
+}
+
+func CreateManyProduct(userID string) error {
+	var products []entity.Product
+	for i := 1; i <= 50; i++ {
+		products = append(products, entity.Product{
+			Id:     uuid.New().String(),
+			Name:   fmt.Sprintf("Product %d", i),
+			Price:  20000,
+			Stock:  120,
+			UserId: userID,
+		})
+	}
+	err := Database.Create(&products).Error
+	if err != nil {
+		return err
+	}
+	return nil
 }
