@@ -67,7 +67,7 @@ func TestAuth(t *testing.T) {
 		require.Nil(t, result)
 		require.Equal(t, &models.ErrorResponse{
 			Code:    400,
-			Message: "Email is invalid",
+			Message: "Email format is invalid",
 			Status:  "Bad Request",
 		}, err)
 	})
