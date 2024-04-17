@@ -147,3 +147,8 @@ Query params
 | `Authorization` | `Type` :`Bearer token` | `Bearer <YOUR_ACCESS_TOKEN` |
 
 
+#### Run Unit Test
+````bash
+go test ./test
+````
+
